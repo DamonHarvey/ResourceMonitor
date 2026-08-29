@@ -73,6 +73,21 @@ class GpuInfo:
         except Exception as e:
             raise RuntimeError(f"Failed to get fan speed: {e}") from e
 
+    def get_min_max_fan_speed(self):
+        """Returns the fan min and max RPM"""
+        try:
+            min_max: list[int] = pynvml.nvmlDeviceGetMinMaxFanSpeed(self._handle)  # type: ignore
+
+            fan_speeds: dict[str, int] = {
+                "min": min_max[0],
+                "max": min_max[1],
+            }
+
+            return fan_speeds
+
+        except Exception as e:
+            raise RuntimeError(f"Failed to get fan speed: {e}") from e
+
     def get_memory_info(self):
         """Returns the memory info in a dictionary [total, free, used]"""
         try:
@@ -116,6 +131,8 @@ def main():
     print(gpu.get_memory_info())
 
     print(gpu.get_usage())
+
+    print(gpu.get_min_max_fan_speed())
 
     NVMLManager.stop()
 
