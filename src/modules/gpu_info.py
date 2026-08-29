@@ -88,6 +88,20 @@ class GpuInfo:
         except Exception as e:
             raise RuntimeError(f"Failed to get memory info: {e}") from e
 
+    def get_usage(self):
+        """Returns the gpu usage percent info in a dictionary [gpu, memory]"""
+        try:
+            info = pynvml.nvmlDeviceGetUtilizationRates(self._handle)
+
+            usage_info: dict[str, int] = {
+                "gpu": info.gpu,
+                "memory": info.memory,
+            }  # type: ignore
+
+            return usage_info
+        except Exception as e:
+            raise RuntimeError(f"Failed to get usage info: {e}") from e
+
 
 def main():
 
@@ -100,6 +114,8 @@ def main():
     print(gpu.get_temp())
 
     print(gpu.get_memory_info())
+
+    print(gpu.get_usage())
 
     NVMLManager.stop()
 
