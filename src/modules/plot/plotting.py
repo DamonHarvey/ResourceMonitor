@@ -8,11 +8,10 @@ from pyqtgraph.graphicsItems.ViewBox.ViewBox import ViewBox
 
 class Plot(pg.PlotWidget):
 
-    def __init__(self, parent=None, background="default", plotItem=None, **kargs):
-        super().__init__(parent, background, plotItem, **kargs)
+    def __init__(self):
+        super().__init__()
 
-        self.plot_item: PlotItem = self.getPlotItem()  # type: ignore
-        self.view_box: ViewBox = self.plot_item.getViewBox()
+        self.init_graph_specifications()
 
         self._init_settings()
 
@@ -22,20 +21,34 @@ class Plot(pg.PlotWidget):
 
     def _init_settings(self):
         pg.setConfigOptions(antialias=True)
+
         self.setMouseEnabled(False, False)
         self.hideButtons()
+        self.plotItem.setMenuEnabled(False)  # type: ignore
 
-        self.MAX_X_RANGE = 120
-        self.setXRange(0, self.MAX_X_RANGE)
+        self.plotItem.getViewBox().invertX(True)  # type: ignore
 
-        self.plot_item.setMenuEnabled(False)
-        self.view_box.invertX(True)
+    def init_graph_specifications(self):
+        self.set_max_x_range()
+        self.set_max_y_range()
 
-    def add_update(self, data: int | float):
+    def set_max_x_range(self, max_x_range: int | float | None = None):
+        if max_x_range is None:
+            self.enableAutoRange(axis="x")
+        else:
+            self.setXRange(max_x_range, 0)
+
+    def set_max_y_range(self, max_y_range: int | float | None = None):
+        if max_y_range is None:
+            self.enableAutoRange(axis="y")
+        else:
+            self.setYRange(max_y_range, 0)
+
+    def update_data(self, data: int | float):
 
         self.data.insert(0, data)
 
-        if len(self.data) > self.MAX_X_RANGE:
+        if len(self.data) > 60:  # magic
             self.data.pop()
 
         self.curve.setData(self.data)
@@ -46,10 +59,13 @@ def main():
 
     window = Plot()
 
+    window.set_max_y_range(100)
+    window.set_max_x_range(10)
+
+    for i in range(100):
+        window.update_data(i)
+
     window.show()
-
-    window.add_update(1)
-
     app.exec()
 
 
