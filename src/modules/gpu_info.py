@@ -73,6 +73,21 @@ class GpuInfo:
         except Exception as e:
             raise RuntimeError(f"Failed to get fan speed: {e}") from e
 
+    def get_memory_info(self):
+        """Returns the memory info in a dictionary [total, free, used]"""
+        try:
+            info = pynvml.nvmlDeviceGetMemoryInfo(self._handle)
+
+            memory_info: dict[str, int] = {
+                "total": info.total,
+                "free": info.free,
+                "used": info.used,
+            }  # type: ignore
+
+            return memory_info
+        except Exception as e:
+            raise RuntimeError(f"Failed to get memory info: {e}") from e
+
 
 def main():
 
@@ -83,6 +98,8 @@ def main():
     print(gpu.name)
     print(gpu.get_fan_speed())
     print(gpu.get_temp())
+
+    print(gpu.get_memory_info())
 
     NVMLManager.stop()
 
