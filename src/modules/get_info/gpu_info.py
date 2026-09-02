@@ -74,7 +74,7 @@ class GpuInfo:
             raise RuntimeError(f"Failed to get fan speed: {e}") from e
 
     def get_min_max_fan_speed(self):
-        """Returns the fan min and max RPM"""
+        """Returns the fan min and max RPM ["min", "max"]"""
         try:
             min_max: list[int] = pynvml.nvmlDeviceGetMinMaxFanSpeed(self._handle)  # type: ignore
 

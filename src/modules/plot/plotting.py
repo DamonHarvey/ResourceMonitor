@@ -19,6 +19,8 @@ class Plot(pg.PlotWidget):
 
         self.data = []
 
+        self.max_x = 10
+
     def _init_settings(self):
         pg.setConfigOptions(antialias=True)
 
@@ -38,6 +40,8 @@ class Plot(pg.PlotWidget):
         else:
             self.setXRange(max_x_range, 0)
 
+            self.max_x = int(self.getViewBox().viewRange()[0][1])
+
     def set_max_y_range(self, max_y_range: int | float | None = None):
         if max_y_range is None:
             self.enableAutoRange(axis="y")
@@ -48,7 +52,7 @@ class Plot(pg.PlotWidget):
 
         self.data.insert(0, data)
 
-        if len(self.data) > 60:  # magic
+        if len(self.data) > self.max_x:
             self.data.pop()
 
         self.curve.setData(self.data)
@@ -60,7 +64,7 @@ def main():
     window = Plot()
 
     window.set_max_y_range(100)
-    window.set_max_x_range(10)
+    window.set_max_x_range(25)
 
     for i in range(100):
         window.update_data(i)
