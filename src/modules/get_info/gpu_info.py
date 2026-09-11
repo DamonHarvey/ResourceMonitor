@@ -73,47 +73,68 @@ class GpuInfo:
         except Exception as e:
             raise RuntimeError(f"Failed to get fan speed: {e}") from e
 
-    def get_min_max_fan_speed(self):
-        """Returns the fan min and max RPM ["min", "max"]"""
+    def get_min_fan_speed(self):
+        """Returns min fan speed"""
         try:
-            min_max: list[int] = pynvml.nvmlDeviceGetMinMaxFanSpeed(self._handle)  # type: ignore
+            fan_speed: list[int] = pynvml.nvmlDeviceGetMinMaxFanSpeed(self._handle)  # type: ignore
 
-            fan_speeds: dict[str, int] = {
-                "min": min_max[0],
-                "max": min_max[1],
-            }
-
-            return fan_speeds
+            return fan_speed[0]
 
         except Exception as e:
             raise RuntimeError(f"Failed to get fan speed: {e}") from e
 
-    def get_memory_info(self):
-        """Returns the memory info in a dictionary [total, free, used]"""
+    def get_max_fan_speed(self):
+        """Returns max fan speed"""
         try:
-            info = pynvml.nvmlDeviceGetMemoryInfo(self._handle)
+            fan_speed: list[int] = pynvml.nvmlDeviceGetMinMaxFanSpeed(self._handle)  # type: ignore
 
-            memory_info: dict[str, int] = {
-                "total": info.total,
-                "free": info.free,
-                "used": info.used,
-            }  # type: ignore
+            return fan_speed[1]
 
-            return memory_info
+        except Exception as e:
+            raise RuntimeError(f"Failed to get fan speed: {e}") from e
+
+    def get_total_memory(self):
+        """Returns total memory"""
+        try:
+            memory_info = pynvml.nvmlDeviceGetMemoryInfo(self._handle)
+
+            return int(memory_info.total)  # type: ignore
         except Exception as e:
             raise RuntimeError(f"Failed to get memory info: {e}") from e
 
-    def get_usage(self):
-        """Returns the gpu usage percent info in a dictionary [gpu, memory]"""
+    def get_free_memory(self):
+        """Returns free memory"""
         try:
-            info = pynvml.nvmlDeviceGetUtilizationRates(self._handle)
+            memory_info = pynvml.nvmlDeviceGetMemoryInfo(self._handle)
 
-            usage_info: dict[str, int] = {
-                "gpu": info.gpu,
-                "memory": info.memory,
-            }  # type: ignore
+            return int(memory_info.free)  # type: ignore
+        except Exception as e:
+            raise RuntimeError(f"Failed to get memory info: {e}") from e
 
-            return usage_info
+    def get_used_memory(self):
+        """Returns used memory"""
+        try:
+            memory_info = pynvml.nvmlDeviceGetMemoryInfo(self._handle)
+
+            return int(memory_info.used)  # type: ignore
+        except Exception as e:
+            raise RuntimeError(f"Failed to get memory info: {e}") from e
+
+    def get_memory_usage(self):
+        """Returns the memory usage percent"""
+        try:
+            usage_info = pynvml.nvmlDeviceGetUtilizationRates(self._handle)
+
+            return int(usage_info.memory)  # type: ignore
+        except Exception as e:
+            raise RuntimeError(f"Failed to get usage info: {e}") from e
+
+    def get_gpu_usage(self):
+        """Returns the gpu usage percent"""
+        try:
+            usage_info = pynvml.nvmlDeviceGetUtilizationRates(self._handle)
+
+            return int(usage_info.gpu)  # type: ignore
         except Exception as e:
             raise RuntimeError(f"Failed to get usage info: {e}") from e
 
@@ -128,11 +149,15 @@ def main():
     print(gpu.get_fan_speed())
     print(gpu.get_temp())
 
-    print(gpu.get_memory_info())
+    print(gpu.get_total_memory())
+    print(gpu.get_used_memory())
+    print(gpu.get_free_memory())
 
-    print(gpu.get_usage())
+    print(gpu.get_memory_usage())
+    print(f"gpu: {gpu.get_gpu_usage()}")
 
-    print(gpu.get_min_max_fan_speed())
+    print(gpu.get_min_fan_speed())
+    print(gpu.get_max_fan_speed())
 
     NVMLManager.stop()
 

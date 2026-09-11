@@ -1,34 +1,53 @@
 import pyqtgraph as pg
 from PySide6.QtWidgets import QApplication
 
+
 from pyqtgraph.graphicsItems.PlotDataItem import PlotDataItem
 from pyqtgraph.graphicsItems.PlotItem.PlotItem import PlotItem
 from pyqtgraph.graphicsItems.ViewBox.ViewBox import ViewBox
 
 
-class Plot(pg.PlotWidget):
+class Plot:
 
     def __init__(self):
-        super().__init__()
+
+        self._root = pg.PlotWidget()
+
+        self.plot_item = self._get_plot_item()
+        self.view_box = self._get_view_box()
 
         self.init_graph_specifications()
-
         self._init_settings()
 
-        self.curve: PlotDataItem = self.plot(pen="r")
+        self.curve: PlotDataItem = self.plot_item.plot(pen="r")
 
         self.data = []
 
         self.max_x = 10
 
+    def _get_plot_item(self):
+
+        plot_item = self._root.getPlotItem()
+
+        if not isinstance(plot_item, PlotItem):
+            raise TypeError
+
+        return plot_item
+
+    def _get_view_box(self):
+
+        view_box = self._get_plot_item().getViewBox()
+
+        return view_box
+
     def _init_settings(self):
         pg.setConfigOptions(antialias=True)
 
-        self.setMouseEnabled(False, False)
-        self.hideButtons()
-        self.plotItem.setMenuEnabled(False)  # type: ignore
+        self.plot_item.setMenuEnabled(False)
+        self.plot_item.hideButtons()
+        self.plot_item.setMenuEnabled(False)
 
-        self.plotItem.getViewBox().invertX(True)  # type: ignore
+        self.view_box.invertX(True)
 
     def init_graph_specifications(self):
         self.set_max_x_range()
@@ -36,17 +55,18 @@ class Plot(pg.PlotWidget):
 
     def set_max_x_range(self, max_x_range: int | float | None = None):
         if max_x_range is None:
-            self.enableAutoRange(axis="x")
-        else:
-            self.setXRange(max_x_range, 0)
+            self.view_box.enableAutoRange(axis="x")
 
-            self.max_x = int(self.getViewBox().viewRange()[0][1])
+        else:
+            self.view_box.setXRange(0, max_x_range, 0)
+
+            self.max_x = int(self.view_box.viewRange()[0][1])
 
     def set_max_y_range(self, max_y_range: int | float | None = None):
         if max_y_range is None:
-            self.enableAutoRange(axis="y")
+            self.view_box.enableAutoRange(axis="y")
         else:
-            self.setYRange(max_y_range, 0)
+            self.view_box.setYRange(max_y_range, 0)
 
     def update_data(self, data: int | float):
 
@@ -56,6 +76,13 @@ class Plot(pg.PlotWidget):
             self.data.pop()
 
         self.curve.setData(self.data)
+
+    def widget(self):
+        return self._root
+
+    def show(self):
+
+        self._root.show()
 
 
 def main():
@@ -70,6 +97,7 @@ def main():
         window.update_data(i)
 
     window.show()
+
     app.exec()
 
 

@@ -17,19 +17,19 @@ class Grapher(QMainWindow):
 
         self.gpu = gpu_info.GpuInfo()
 
-        self.setCentralWidget(self.plot_widget)
+        self.setCentralWidget(self.plot_widget.widget())
 
         self._init_timer()
 
     def _init_timer(self):
         self.timer = QTimer()
-        self.timer.setInterval(10)
+        self.timer.setInterval(50)
         self.timer.timeout.connect(self.update_plot)
         self.timer.start()
 
     def update_plot(self) -> None:
 
-        info = self.gpu.get_temp()
+        info = self.gpu.get_free_memory() / (1024**3)
 
         self.plot_widget.update_data(info)
 
