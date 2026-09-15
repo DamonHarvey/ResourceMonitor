@@ -32,7 +32,7 @@ class Grapher(QMainWindow):
         self.plot_widget.set_max_y_range(100)
 
         self.plot_widget.set_title("Gpu Usage")
-        self.plot_widget.set_y_label("Usage Percent")
+        self.plot_widget.set_y_label("Usage")
         self.plot_widget.set_x_lable("Time")
 
         self.plot_widget.set_plot_color("#ff0000")

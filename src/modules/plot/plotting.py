@@ -1,11 +1,59 @@
 import pyqtgraph as pg
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QStyleOption
 
 
 from pyqtgraph.graphicsItems.PlotDataItem import PlotDataItem
 from pyqtgraph.graphicsItems.PlotItem.PlotItem import PlotItem
 from pyqtgraph.graphicsItems.ViewBox.ViewBox import ViewBox
 from pyqtgraph.graphicsItems.AxisItem import AxisItem
+
+
+class SignedAxis(pg.AxisItem):
+
+    def __init__(
+        self,
+        orientation: str,
+        pen=None,
+        textPen=None,
+        tickPen=None,
+        linkView=None,
+        parent=None,
+        maxTickLength=-5,
+        showValues=True,
+        **args,
+    ):
+        super().__init__(
+            orientation,
+            pen,
+            textPen,
+            tickPen,
+            linkView,
+            parent,
+            maxTickLength,
+            showValues,
+            **args,
+        )
+
+        self.tick_sign_before = False
+        self.tick_sign = ""
+
+    def set_sign(self, value: str):
+        self.tick_sign = value
+
+    def set_sign_before(self, value: bool = True):
+        """sets the position of the sign for a the value
+        Default: False is after
+        """
+
+        self.tick_sign_before = value
+
+    def tickStrings(self, values: list[float], scale: float, spacing: float):
+
+        if self.tick_sign_before:
+            return [f"{self.tick_sign}{v:.0f}" for v in values]
+
+        else:
+            return [f"{v:.0f}{self.tick_sign}" for v in values]
 
 
 class Plot:
@@ -21,6 +69,7 @@ class Plot:
         self._init_graph_specifications()
         self._init_settings()
         self._setup_legend()
+        self._set_y_axis_sign()
 
         self._curve: PlotDataItem = self._plot_item.plot()
 
@@ -34,6 +83,13 @@ class Plot:
         self.set_x_lable("X-Axis")
         self.set_y_label("Y-Axis")
         self.set_plot_color("#ffffff")
+
+    def _set_y_axis_sign(self):
+
+        signed_y_axis = SignedAxis(orientation="left")
+        signed_y_axis.set_sign("%")
+
+        self._plot_item.setAxisItems({"left": signed_y_axis})
 
     def _get_plot_item(self):
 
