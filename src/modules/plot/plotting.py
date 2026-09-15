@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QApplication
 from pyqtgraph.graphicsItems.PlotDataItem import PlotDataItem
 from pyqtgraph.graphicsItems.PlotItem.PlotItem import PlotItem
 from pyqtgraph.graphicsItems.ViewBox.ViewBox import ViewBox
+from pyqtgraph.graphicsItems.AxisItem import AxisItem
 
 
 class Plot:
@@ -13,17 +14,26 @@ class Plot:
 
         self._root = pg.PlotWidget()
 
-        self.plot_item = self._get_plot_item()
-        self.view_box = self._get_view_box()
+        self._plot_item = self._get_plot_item()
+        self._view_box = self._get_view_box()
+        self._legend = self._get_created_legend()
 
-        self.init_graph_specifications()
+        self._init_graph_specifications()
         self._init_settings()
+        self._setup_legend()
 
-        self.curve: PlotDataItem = self.plot_item.plot(pen="r")
+        self._curve: PlotDataItem = self._plot_item.plot()
 
-        self.data = []
+        self._legend_add_value()
 
-        self.max_x = 10
+        self._data = []
+
+        self._max_x = 10
+
+        self.set_title("None")
+        self.set_x_lable("X-Axis")
+        self.set_y_label("Y-Axis")
+        self.set_plot_color("#ffffff")
 
     def _get_plot_item(self):
 
@@ -40,42 +50,80 @@ class Plot:
 
         return view_box
 
+    def _get_created_legend(self):
+
+        legend = self._plot_item.addLegend()
+
+        return legend
+
+    def _setup_legend(self):
+
+        self._legend.mouseDragEvent = (
+            lambda *args, **kwargs: None
+        )  # Disables drag event
+
+        self._legend.setOffset(0)
+
+    def _legend_add_value(self):
+
+        self._legend.addItem(self._curve, "Test")
+
     def _init_settings(self):
         pg.setConfigOptions(antialias=True)
 
-        self.plot_item.setMenuEnabled(False)
-        self.plot_item.hideButtons()
-        self.plot_item.setMenuEnabled(False)
+        self._plot_item.setMenuEnabled(False)
+        self._plot_item.hideButtons()
 
-        self.view_box.invertX(True)
+        self._view_box.setMouseEnabled(False, False)
+        self._view_box.invertX(True)
 
-    def init_graph_specifications(self):
+    def _init_graph_specifications(self):
         self.set_max_x_range()
         self.set_max_y_range()
 
+    def set_title(self, title: str):
+
+        self._plot_item.setTitle(title)
+
+    def set_x_lable(self, lable: str):
+
+        x_axis: AxisItem = self._plot_item.getAxis("bottom")
+
+        x_axis.setLabel(lable)
+
+    def set_y_label(self, label: str):
+
+        y_axis: AxisItem = self._plot_item.getAxis("left")
+
+        y_axis.setLabel(label)
+
+    def set_plot_color(self, color: str):
+
+        self._curve.setPen(color)
+
     def set_max_x_range(self, max_x_range: int | float | None = None):
         if max_x_range is None:
-            self.view_box.enableAutoRange(axis="x")
+            self._view_box.enableAutoRange(axis="x")
 
         else:
-            self.view_box.setXRange(0, max_x_range, 0)
+            self._view_box.setXRange(0, max_x_range, 0)
 
-            self.max_x = int(self.view_box.viewRange()[0][1])
+            self._max_x = int(self._view_box.viewRange()[0][1])
 
     def set_max_y_range(self, max_y_range: int | float | None = None):
         if max_y_range is None:
-            self.view_box.enableAutoRange(axis="y")
+            self._view_box.enableAutoRange(axis="y")
         else:
-            self.view_box.setYRange(max_y_range, 0)
+            self._view_box.setYRange(max_y_range, 0)
 
     def update_data(self, data: int | float):
 
-        self.data.insert(0, data)
+        self._data.insert(0, data)
 
-        if len(self.data) > self.max_x:
-            self.data.pop()
+        if len(self._data) > self._max_x:
+            self._data.pop()
 
-        self.curve.setData(self.data)
+        self._curve.setData(self._data)
 
     def widget(self):
         return self._root

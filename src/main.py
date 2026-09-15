@@ -12,13 +12,12 @@ class Grapher(QMainWindow):
         super().__init__()
 
         self.plot_widget = Plot()
-        self.plot_widget.set_max_x_range(600)
-        self.plot_widget.set_max_y_range(80)
 
         self.gpu = gpu_info.GpuInfo()
 
         self.setCentralWidget(self.plot_widget.widget())
 
+        self.init_plot_settings()
         self._init_timer()
 
     def _init_timer(self):
@@ -27,9 +26,20 @@ class Grapher(QMainWindow):
         self.timer.timeout.connect(self.update_plot)
         self.timer.start()
 
+    def init_plot_settings(self):
+
+        self.plot_widget.set_max_x_range(600)
+        self.plot_widget.set_max_y_range(100)
+
+        self.plot_widget.set_title("Gpu Usage")
+        self.plot_widget.set_y_label("Usage Percent")
+        self.plot_widget.set_x_lable("Time")
+
+        self.plot_widget.set_plot_color("#ff0000")
+
     def update_plot(self) -> None:
 
-        info = self.gpu.get_free_memory() / (1024**3)
+        info = self.gpu.get_gpu_usage()
 
         self.plot_widget.update_data(info)
 
